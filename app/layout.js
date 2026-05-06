@@ -1,3 +1,4 @@
+import "./globals.css";
 export const metadata = {
   title: "SimTrack Coach",
   description: "Sim racing track guides, telemetry coaching, and lap-time improvement tools."
