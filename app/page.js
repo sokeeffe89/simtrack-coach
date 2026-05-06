@@ -1,17 +1,27 @@
 import { tracks } from "../lib/tracks";
 
 export default function Home() {
+  const featuredTracks = tracks.slice(0, 4);
+
   return (
     <main className="page">
+      <nav className="nav">
+        <a href="/" className="logo">SimTrack Coach</a>
+        <div>
+          <a href="/tracks">Tracks</a>
+          <a href="#roadmap">Roadmap</a>
+        </div>
+      </nav>
+
       <section className="hero">
         <div>
           <p className="eyebrow">Telemetry coaching for sim racers</p>
-          <h1>SimTrack Coach</h1>
+          <h1>Drive every track faster.</h1>
           <p className="heroText">
             Learn racing tracks, understand braking zones, and get car-class-specific coaching for iRacing, ACC, and Assetto Corsa.
           </p>
           <div className="actions">
-            <a href="#tracks" className="button primary">Explore Tracks</a>
+            <a href="/tracks" className="button primary">Explore Track Library</a>
             <a href="#roadmap" className="button secondary">View Roadmap</a>
           </div>
         </div>
@@ -43,13 +53,16 @@ export default function Home() {
       </section>
 
       <section id="tracks" className="section">
-        <div className="sectionHeader">
-          <p className="eyebrow">Track library</p>
-          <h2>Popular starter tracks</h2>
+        <div className="sectionHeader rowHeader">
+          <div>
+            <p className="eyebrow">Featured tracks</p>
+            <h2>Popular starter guides</h2>
+          </div>
+          <a href="/tracks" className="button secondary">View all tracks</a>
         </div>
 
         <div className="trackGrid">
-          {tracks.map((track) => (
+          {featuredTracks.map((track) => (
             <a className="trackCard" key={track.slug} href={`/tracks/${track.slug}`}>
               <div className="trackTop">
                 <h3>{track.name}</h3>
