@@ -1,37 +1,4 @@
-const tracks = [
-  {
-    name: "Spa-Francorchamps",
-    country: "Belgium",
-    sims: ["iRacing", "ACC", "AC"],
-    classes: ["GT3", "LMP2"],
-    focus: "High-speed commitment and elevation change",
-    tip: "Prioritise clean exits from La Source and the Bus Stop. Be smooth through Eau Rouge/Raidillon."
-  },
-  {
-    name: "Monza",
-    country: "Italy",
-    sims: ["iRacing", "ACC", "AC"],
-    classes: ["GT3", "F4"],
-    focus: "Late braking and traction zones",
-    tip: "Lap time comes from stable braking and clean chicane exits, not just braking later."
-  },
-  {
-    name: "Silverstone",
-    country: "United Kingdom",
-    sims: ["iRacing", "AC"],
-    classes: ["GT3", "F4"],
-    focus: "Flow and high-speed direction change",
-    tip: "Keep steering inputs calm through Maggots and Becketts. Avoid scrubbing speed."
-  },
-  {
-    name: "Suzuka",
-    country: "Japan",
-    sims: ["iRacing", "AC"],
-    classes: ["GT3", "F4"],
-    focus: "Rhythm and technical flow",
-    tip: "Treat the Esses as one connected sequence. Do not overdrive the first turn."
-  }
-];
+import { tracks } from "../lib/tracks";
 
 export default function Home() {
   return (
@@ -83,7 +50,7 @@ export default function Home() {
 
         <div className="trackGrid">
           {tracks.map((track) => (
-            <article className="trackCard" key={track.name}>
+            <a className="trackCard" key={track.slug} href={`/tracks/${track.slug}`}>
               <div className="trackTop">
                 <h3>{track.name}</h3>
                 <span>{track.country}</span>
@@ -103,8 +70,8 @@ export default function Home() {
                 ))}
               </div>
 
-              <p className="tip">{track.tip}</p>
-            </article>
+              <p className="tip">{track.aiTip}</p>
+            </a>
           ))}
         </div>
       </section>
