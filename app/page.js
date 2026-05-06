@@ -1,9 +1,135 @@
+const tracks = [
+  {
+    name: "Spa-Francorchamps",
+    country: "Belgium",
+    sims: ["iRacing", "ACC", "AC"],
+    classes: ["GT3", "LMP2"],
+    focus: "High-speed commitment and elevation change",
+    tip: "Prioritise clean exits from La Source and the Bus Stop. Be smooth through Eau Rouge/Raidillon."
+  },
+  {
+    name: "Monza",
+    country: "Italy",
+    sims: ["iRacing", "ACC", "AC"],
+    classes: ["GT3", "F4"],
+    focus: "Late braking and traction zones",
+    tip: "Lap time comes from stable braking and clean chicane exits, not just braking later."
+  },
+  {
+    name: "Silverstone",
+    country: "United Kingdom",
+    sims: ["iRacing", "AC"],
+    classes: ["GT3", "F4"],
+    focus: "Flow and high-speed direction change",
+    tip: "Keep steering inputs calm through Maggots and Becketts. Avoid scrubbing speed."
+  },
+  {
+    name: "Suzuka",
+    country: "Japan",
+    sims: ["iRacing", "AC"],
+    classes: ["GT3", "F4"],
+    focus: "Rhythm and technical flow",
+    tip: "Treat the Esses as one connected sequence. Do not overdrive the first turn."
+  }
+];
+
 export default function Home() {
   return (
-    <main style={{padding: 24, fontFamily: 'Arial, sans-serif', background: '#0b1220', minHeight: '100vh', color: '#e6edf3'}}>
-      <h1>SimTrack Coach</h1>
-      <p>Starter app is running.</p>
-      <p>Next steps: add tracks, telemetry upload, auth, and leaderboards.</p>
+    <main className="page">
+      <section className="hero">
+        <div>
+          <p className="eyebrow">Telemetry coaching for sim racers</p>
+          <h1>SimTrack Coach</h1>
+          <p className="heroText">
+            Learn racing tracks, understand braking zones, and get car-class-specific coaching for iRacing, ACC, and Assetto Corsa.
+          </p>
+          <div className="actions">
+            <a href="#tracks" className="button primary">Explore Tracks</a>
+            <a href="#roadmap" className="button secondary">View Roadmap</a>
+          </div>
+        </div>
+
+        <div className="heroPanel">
+          <h2>AI Corner Coach</h2>
+          <p className="cornerTitle">Spa — Eau Rouge / Raidillon</p>
+          <ul>
+            <li>Brake or lift lightly before compression.</li>
+            <li>Keep one clean steering input.</li>
+            <li>Commit to throttle before the crest.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="stats">
+        <div>
+          <span>Launch sims</span>
+          <strong>iRacing · ACC · AC</strong>
+        </div>
+        <div>
+          <span>Coaching depth</span>
+          <strong>Class-based first</strong>
+        </div>
+        <div>
+          <span>Telemetry</span>
+          <strong>CSV upload next</strong>
+        </div>
+      </section>
+
+      <section id="tracks" className="section">
+        <div className="sectionHeader">
+          <p className="eyebrow">Track library</p>
+          <h2>Popular starter tracks</h2>
+        </div>
+
+        <div className="trackGrid">
+          {tracks.map((track) => (
+            <article className="trackCard" key={track.name}>
+              <div className="trackTop">
+                <h3>{track.name}</h3>
+                <span>{track.country}</span>
+              </div>
+
+              <p className="focus">{track.focus}</p>
+
+              <div className="chips">
+                {track.sims.map((sim) => (
+                  <span key={sim}>{sim}</span>
+                ))}
+              </div>
+
+              <div className="chips mutedChips">
+                {track.classes.map((carClass) => (
+                  <span key={carClass}>{carClass}</span>
+                ))}
+              </div>
+
+              <p className="tip">{track.tip}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="roadmap" className="section roadmap">
+        <div>
+          <p className="eyebrow">Product roadmap</p>
+          <h2>Next build phases</h2>
+        </div>
+
+        <div className="roadmapGrid">
+          <div>
+            <strong>Phase 1</strong>
+            <p>Track guides, car-class coaching, track pages, and Supabase data.</p>
+          </div>
+          <div>
+            <strong>Phase 2</strong>
+            <p>Login, garage, saved favourites, public leaderboards.</p>
+          </div>
+          <div>
+            <strong>Phase 3</strong>
+            <p>Telemetry upload, lap delta analysis, AI corner feedback.</p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
