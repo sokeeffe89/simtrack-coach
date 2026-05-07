@@ -1,6 +1,3 @@
-# Replace `app/garage/page.js` with this
-
-```js
 "use client";
 
 import { useEffect, useState } from "react";
