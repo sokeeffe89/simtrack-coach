@@ -9,7 +9,8 @@ export default function Home() {
         <a href="/" className="logo">SimTrack Coach</a>
         <div>
           <a href="/tracks">Tracks</a>
-          <a href="#roadmap">Roadmap</a>
+          <a href="/garage">Garage</a>
+         <a href="/login">Login</a>
         </div>
       </nav>
 
