@@ -219,7 +219,7 @@ export default function GaragePage() {
                 </p>
 
                 <p>
-                  <strong>Sim:</strong> {car.sim}
+                  <strong>Sim:</strong> {car.sim_name}
                 </p>
 
                 <button
