@@ -95,7 +95,7 @@ await loadCars(profileData.id);
     setCarName("");
     setMessage("Car saved.");
 
-    await loadCars(user.id);
+    await loadCars(profile.id);
   }
 
   async function deleteCar(id) {
@@ -105,7 +105,7 @@ await loadCars(profileData.id);
       .eq("id", id);
 
     if (!error) {
-      await loadCars(user.id);
+      await loadCars(profile.id);
     }
   }
 
