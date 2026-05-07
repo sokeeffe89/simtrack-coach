@@ -1,7 +1,11 @@
+# Replace `app/garage/page.js` with this
+
+```js
 "use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { tracks } from "../../lib/tracks";
 
 export default function GaragePage() {
   const [user, setUser] = useState(null);
@@ -13,6 +17,9 @@ export default function GaragePage() {
   const [sim, setSim] = useState("iRacing");
 
   const [cars, setCars] = useState([]);
+  const [favourites, setFavourites] = useState([]);
+  const [selectedTrack, setSelectedTrack] = useState("spa");
+
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -39,7 +46,9 @@ export default function GaragePage() {
       }
 
       setProfile(profileData);
+
       await loadCars(profileData.id);
+      await loadFavourites(profileData.id);
 
       setLoading(false);
     }
@@ -48,40 +57,44 @@ export default function GaragePage() {
   }, []);
 
   async function loadCars(profileId) {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("garage_cars")
       .select("*")
       .eq("profile_id", profileId)
       .order("created_at", { ascending: false });
 
-    if (!error && data) {
+    if (data) {
       setCars(data);
+    }
+  }
+
+  async function loadFavourites(profileId) {
+    const { data } = await supabase
+      .from("favourite_tracks")
+      .select("*")
+      .eq("profile_id", profileId)
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setFavourites(data);
     }
   }
 
   async function saveCar(e) {
     e.preventDefault();
 
-    if (!carName.trim()) {
-      setMessage("Please enter a car name.");
-      return;
-    }
+    if (!profile) return;
 
-    if (!profile) {
-      setMessage("Profile not loaded yet.");
-      return;
-    }
-
-    setMessage("Saving car...");
-
-    const { error } = await supabase.from("garage_cars").insert([
-      {
-        profile_id: profile.id,
-        car_name: carName,
-        class_name: carClass,
-        sim_name: sim
-      }
-    ]);
+    const { error } = await supabase
+      .from("garage_cars")
+      .insert([
+        {
+          profile_id: profile.id,
+          car_name: carName,
+          class_name: carClass,
+          sim_name: sim
+        }
+      ]);
 
     if (error) {
       setMessage(error.message);
@@ -95,14 +108,43 @@ export default function GaragePage() {
   }
 
   async function deleteCar(id) {
-    const { error } = await supabase
+    await supabase
       .from("garage_cars")
       .delete()
       .eq("id", id);
 
-    if (!error && profile) {
-      await loadCars(profile.id);
+    await loadCars(profile.id);
+  }
+
+  async function addFavouriteTrack() {
+    if (!profile) return;
+
+    const { error } = await supabase
+      .from("favourite_tracks")
+      .insert([
+        {
+          profile_id: profile.id,
+          track_slug: selectedTrack
+        }
+      ]);
+
+    if (error) {
+      setMessage(error.message);
+      return;
     }
+
+    setMessage("Favourite track added.");
+
+    await loadFavourites(profile.id);
+  }
+
+  async function removeFavourite(id) {
+    await supabase
+      .from("favourite_tracks")
+      .delete()
+      .eq("id", id);
+
+    await loadFavourites(profile.id);
   }
 
   async function logout() {
@@ -121,22 +163,7 @@ export default function GaragePage() {
   if (!user) {
     return (
       <main className="page">
-        <nav className="nav">
-          <a href="/" className="logo">SimTrack Coach</a>
-          <div>
-            <a href="/tracks">Tracks</a>
-            <a href="/login">Login</a>
-          </div>
-        </nav>
-
-        <section className="authPanel">
-          <p className="eyebrow">Garage locked</p>
-          <h1>Log in to access your garage.</h1>
-          <p className="heroText">
-            Save cars, telemetry sessions, favourite tracks, and AI coaching history.
-          </p>
-          <a href="/login" className="button primary">Log in</a>
-        </section>
+        <p>Please log in.</p>
       </main>
     );
   }
@@ -145,6 +172,7 @@ export default function GaragePage() {
     <main className="page">
       <nav className="nav">
         <a href="/" className="logo">SimTrack Coach</a>
+
         <div>
           <a href="/tracks">Tracks</a>
           <button onClick={logout} className="navButton">Log out</button>
@@ -184,8 +212,35 @@ export default function GaragePage() {
               <option>Assetto Corsa</option>
             </select>
 
-            <button className="button primary" type="submit">Save car</button>
+            <button className="button primary" type="submit">
+              Save car
+            </button>
           </form>
+
+          <h2 style={{ marginTop: "40px" }}>Favourite tracks</h2>
+
+          <div className="authForm">
+            <label>Select track</label>
+
+            <select
+              value={selectedTrack}
+              onChange={(e) => setSelectedTrack(e.target.value)}
+            >
+              {tracks.map((track) => (
+                <option key={track.slug} value={track.slug}>
+                  {track.name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              className="button primary"
+              type="button"
+              onClick={addFavouriteTrack}
+            >
+              Add favourite
+            </button>
+          </div>
 
           {message && <p className="formMessage">{message}</p>}
         </div>
@@ -203,14 +258,53 @@ export default function GaragePage() {
                 <h3>{car.car_name}</h3>
                 <p><strong>Class:</strong> {car.class_name}</p>
                 <p><strong>Sim:</strong> {car.sim_name}</p>
-                <button onClick={() => deleteCar(car.id)} className="textButton">
+
+                <button
+                  onClick={() => deleteCar(car.id)}
+                  className="textButton"
+                >
                   Delete
                 </button>
               </div>
             ))}
+          </div>
+
+          <h2 style={{ marginTop: "40px" }}>Favourite tracks</h2>
+
+          {favourites.length === 0 && (
+            <p className="heroText">No favourite tracks yet.</p>
+          )}
+
+          <div className="cornerList">
+            {favourites.map((fav) => {
+              const track = tracks.find((t) => t.slug === fav.track_slug);
+
+              return (
+                <div className="cornerCard" key={fav.id}>
+                  <h3>{track?.name || fav.track_slug}</h3>
+
+                  <button
+                    onClick={() => removeFavourite(fav.id)}
+                    className="textButton"
+                  >
+                    Remove
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
     </main>
   );
 }
+```
+
+Then commit and let Vercel redeploy.
+
+Test:
+
+1. Add favourite track
+2. Refresh page
+3. Confirm it persists
+4. Remove favourite track
