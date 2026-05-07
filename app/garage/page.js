@@ -14,6 +14,8 @@ export default function GaragePage() {
   const [cars, setCars] = useState([]);
   const [message, setMessage] = useState("");
 
+  const [profile, setProfile] = useState(null);
+
   useEffect(() => {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
@@ -31,6 +33,9 @@ export default function GaragePage() {
     }
 
     loadUser();
+
+    setUser(data.user);
+    
   }, []);
 
   async function loadCars(userId) {
