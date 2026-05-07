@@ -298,13 +298,3 @@ export default function GaragePage() {
     </main>
   );
 }
-```
-
-Then commit and let Vercel redeploy.
-
-Test:
-
-1. Add favourite track
-2. Refresh page
-3. Confirm it persists
-4. Remove favourite track
