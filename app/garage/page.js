@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 
 export default function GaragePage() {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [carName, setCarName] = useState("");
@@ -13,8 +14,6 @@ export default function GaragePage() {
 
   const [cars, setCars] = useState([]);
   const [message, setMessage] = useState("");
-
-  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -27,44 +26,38 @@ export default function GaragePage() {
 
       setUser(data.user);
 
-      await loadCars(data.user.id);
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("auth_user_id", data.user.id)
+        .single();
+
+      if (profileError) {
+        setMessage(profileError.message);
+        setLoading(false);
+        return;
+      }
+
+      setProfile(profileData);
+      await loadCars(profileData.id);
 
       setLoading(false);
     }
 
     loadUser();
-
-    setUser(data.user);
-
-    const { data: profileData, error: profileError } = await supabase
-  .from("profiles")
-  .select("*")
-  .eq("auth_user_id", data.user.id)
-  .single();
-
-if (profileError) {
-  setMessage(profileError.message);
-  setLoading(false);
-  return;
-}
-
-setProfile(profileData);
-await loadCars(profileData.id);
-    
   }, []);
 
   async function loadCars(profileId) {
-  const { data, error } = await supabase
-    .from("garage_cars")
-    .select("*")
-    .eq("profile_id", profileId)
-    .order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("garage_cars")
+      .select("*")
+      .eq("profile_id", profileId)
+      .order("created_at", { ascending: false });
 
-  if (!error && data) {
-    setCars(data);
+    if (!error && data) {
+      setCars(data);
+    }
   }
-}
-  
 
   async function saveCar(e) {
     e.preventDefault();
@@ -74,18 +67,21 @@ await loadCars(profileData.id);
       return;
     }
 
+    if (!profile) {
+      setMessage("Profile not loaded yet.");
+      return;
+    }
+
     setMessage("Saving car...");
 
-  const { error } = await supabase
-  .from("garage_cars")
-  .insert([
-    {
-      profile_id: profile.id,
-      car_name: carName,
-      class_name: carClass,
-      sim_name: sim
-    }
-  ]);
+    const { error } = await supabase.from("garage_cars").insert([
+      {
+        profile_id: profile.id,
+        car_name: carName,
+        class_name: carClass,
+        sim_name: sim
+      }
+    ]);
 
     if (error) {
       setMessage(error.message);
@@ -104,7 +100,7 @@ await loadCars(profileData.id);
       .delete()
       .eq("id", id);
 
-    if (!error) {
+    if (!error && profile) {
       await loadCars(profile.id);
     }
   }
@@ -127,7 +123,6 @@ await loadCars(profileData.id);
       <main className="page">
         <nav className="nav">
           <a href="/" className="logo">SimTrack Coach</a>
-
           <div>
             <a href="/tracks">Tracks</a>
             <a href="/login">Login</a>
@@ -136,16 +131,11 @@ await loadCars(profileData.id);
 
         <section className="authPanel">
           <p className="eyebrow">Garage locked</p>
-
           <h1>Log in to access your garage.</h1>
-
           <p className="heroText">
             Save cars, telemetry sessions, favourite tracks, and AI coaching history.
           </p>
-
-          <a href="/login" className="button primary">
-            Log in
-          </a>
+          <a href="/login" className="button primary">Log in</a>
         </section>
       </main>
     );
@@ -155,24 +145,16 @@ await loadCars(profileData.id);
     <main className="page">
       <nav className="nav">
         <a href="/" className="logo">SimTrack Coach</a>
-
         <div>
           <a href="/tracks">Tracks</a>
-
-          <button onClick={logout} className="navButton">
-            Log out
-          </button>
+          <button onClick={logout} className="navButton">Log out</button>
         </div>
       </nav>
 
       <section className="section">
         <p className="eyebrow">Driver garage</p>
-
         <h1>Your garage</h1>
-
-        <p className="heroText">
-          Logged in as {user.email}
-        </p>
+        <p className="heroText">Logged in as {user.email}</p>
       </section>
 
       <section className="garageGrid">
@@ -181,7 +163,6 @@ await loadCars(profileData.id);
 
           <form className="authForm" onSubmit={saveCar}>
             <label>Car name</label>
-
             <input
               value={carName}
               onChange={(e) => setCarName(e.target.value)}
@@ -189,11 +170,7 @@ await loadCars(profileData.id);
             />
 
             <label>Class</label>
-
-            <select
-              value={carClass}
-              onChange={(e) => setCarClass(e.target.value)}
-            >
+            <select value={carClass} onChange={(e) => setCarClass(e.target.value)}>
               <option>GT3</option>
               <option>GT4</option>
               <option>F4</option>
@@ -201,52 +178,32 @@ await loadCars(profileData.id);
             </select>
 
             <label>Sim</label>
-
-            <select
-              value={sim}
-              onChange={(e) => setSim(e.target.value)}
-            >
+            <select value={sim} onChange={(e) => setSim(e.target.value)}>
               <option>iRacing</option>
               <option>ACC</option>
               <option>Assetto Corsa</option>
             </select>
 
-            <button className="button primary" type="submit">
-              Save car
-            </button>
+            <button className="button primary" type="submit">Save car</button>
           </form>
 
-          {message && (
-            <p className="formMessage">{message}</p>
-          )}
+          {message && <p className="formMessage">{message}</p>}
         </div>
 
         <div className="roadmap">
           <h2>Saved cars</h2>
 
           {cars.length === 0 && (
-            <p className="heroText">
-              No saved cars yet.
-            </p>
+            <p className="heroText">No saved cars yet.</p>
           )}
 
           <div className="cornerList">
             {cars.map((car) => (
               <div className="cornerCard" key={car.id}>
                 <h3>{car.car_name}</h3>
-
-                <p>
-                  <strong>Class:</strong> {car.class_name}
-                </p>
-
-                <p>
-                  <strong>Sim:</strong> {car.sim_name}
-                </p>
-
-                <button
-                  onClick={() => deleteCar(car.id)}
-                  className="textButton"
-                >
+                <p><strong>Class:</strong> {car.class_name}</p>
+                <p><strong>Sim:</strong> {car.sim_name}</p>
+                <button onClick={() => deleteCar(car.id)} className="textButton">
                   Delete
                 </button>
               </div>
