@@ -61,7 +61,7 @@ export default function GaragePage() {
         {
           user_id: user.id,
           car_name: carName,
-          car_class: carClass,
+          class_name: carClass,
           sim
         }
       ]);
@@ -215,7 +215,7 @@ export default function GaragePage() {
                 <h3>{car.car_name}</h3>
 
                 <p>
-                  <strong>Class:</strong> {car.car_class}
+                  <strong>Class:</strong> {car.class_name}
                 </p>
 
                 <p>
