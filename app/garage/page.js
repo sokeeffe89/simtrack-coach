@@ -35,20 +35,36 @@ export default function GaragePage() {
     loadUser();
 
     setUser(data.user);
+
+    const { data: profileData, error: profileError } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("auth_user_id", data.user.id)
+  .single();
+
+if (profileError) {
+  setMessage(profileError.message);
+  setLoading(false);
+  return;
+}
+
+setProfile(profileData);
+await loadCars(profileData.id);
     
   }, []);
 
-  async function loadCars(userId) {
-    const { data, error } = await supabase
-      .from("garage_cars")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+  async function loadCars(profileId) {
+  const { data, error } = await supabase
+    .from("garage_cars")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      setCars(data);
-    }
+  if (!error && data) {
+    setCars(data);
   }
+}
+  
 
   async function saveCar(e) {
     e.preventDefault();
@@ -60,16 +76,16 @@ export default function GaragePage() {
 
     setMessage("Saving car...");
 
-    const { error } = await supabase
-      .from("garage_cars")
-      .insert([
-        {
-          user_id: user.id,
-          car_name: carName,
-          class_name: carClass,
-          sim_name: sim
-        }
-      ]);
+  const { error } = await supabase
+  .from("garage_cars")
+  .insert([
+    {
+      profile_id: profile.id,
+      car_name: carName,
+      class_name: carClass,
+      sim_name: sim
+    }
+  ]);
 
     if (error) {
       setMessage(error.message);
