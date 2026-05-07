@@ -62,7 +62,7 @@ export default function GaragePage() {
           user_id: user.id,
           car_name: carName,
           class_name: carClass,
-          sim
+          sim_name: sim
         }
       ]);
 
