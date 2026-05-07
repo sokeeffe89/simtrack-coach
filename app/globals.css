@@ -330,3 +330,60 @@ h3 {
     flex-direction: column;
   }
 }
+
+.authPanel {
+  max-width: 620px;
+  margin: 80px auto;
+  background: rgba(16, 26, 36, 0.88);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 28px;
+}
+
+.authForm {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.authForm label {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.authForm input,
+.authForm select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 13px 14px;
+}
+
+.formMessage {
+  color: var(--accent);
+  margin-top: 18px;
+}
+
+.textButton,
+.navButton {
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.garageGrid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 22px;
+}
+
+@media (max-width: 820px) {
+  .garageGrid {
+    grid-template-columns: 1fr;
+  }
+}
