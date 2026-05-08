@@ -11,26 +11,39 @@ export default function TrackMap({ trackSlug, sectorRatings = {} }) {
     );
   }
 
-  function getClass(sectorNumber) {
+  function getSectorClass(sectorNumber) {
     const rating = sectorRatings[sectorNumber];
 
-    if (rating === "excellent") return "trackSector trackSectorExcellent";
-    if (rating === "opportunity") return "trackSector trackSectorOpportunity";
-    if (rating === "focus") return "trackSector trackSectorFocus";
+    if (rating === "excellent") {
+      return "trackSector trackSectorExcellent";
+    }
+
+    if (rating === "opportunity") {
+      return "trackSector trackSectorOpportunity";
+    }
+
+    if (rating === "focus") {
+      return "trackSector trackSectorFocus";
+    }
 
     return "trackSector";
   }
 
   return (
     <div className="trackMapShell">
-      <svg viewBox={map.viewBox} className="trackMapSvg" role="img">
-        <title>Track sector map</title>
+      <svg
+        viewBox={map.viewBox}
+        className="trackMapSvg"
+        role="img"
+        aria-label={`${trackSlug} telemetry sector map`}
+      >
+        <title>{trackSlug} telemetry sector map</title>
 
         {map.sectors.map((sector) => (
           <path
             key={sector.sector}
             d={sector.path}
-            className={getClass(sector.sector)}
+            className={getSectorClass(sector.sector)}
           />
         ))}
 
@@ -39,17 +52,35 @@ export default function TrackMap({ trackSlug, sectorRatings = {} }) {
             key={label.text}
             x={label.x}
             y={label.y}
-         className="trackMapLabel"
+            className="trackMapLabel"
           >
-        {label.text}
-        </text>
-       ))}
+            {label.text}
+          </text>
+        ))}
+
+        {(map.corners || []).map((corner) => (
+          <g key={corner.name}>
+            <text
+              x={corner.x}
+              y={corner.y}
+              className="trackCornerLabel"
+            >
+              {corner.name}
+            </text>
+          </g>
+        ))}
       </svg>
 
       <div className="trackMapLegend">
-        <span><i className="legendExcellent" /> Excellent</span>
-        <span><i className="legendOpportunity" /> Opportunity</span>
-        <span><i className="legendFocus" /> Focus area</span>
+        <span>
+          <i className="legendExcellent" /> Excellent
+        </span>
+        <span>
+          <i className="legendOpportunity" /> Opportunity
+        </span>
+        <span>
+          <i className="legendFocus" /> Focus area
+        </span>
       </div>
     </div>
   );
