@@ -1,6 +1,6 @@
 import { trackMaps } from "../lib/trackMaps";
 
-export default function TrackMap({ trackSlug, bestSectors = {} }) {
+export default function TrackMap({ trackSlug, sectorRatings = {} }) {
   const map = trackMaps[trackSlug];
 
   if (!map) {
@@ -11,22 +11,28 @@ export default function TrackMap({ trackSlug, bestSectors = {} }) {
     );
   }
 
+  function getClass(sectorNumber) {
+    const rating = sectorRatings[sectorNumber];
+
+    if (rating === "excellent") return "trackSector trackSectorExcellent";
+    if (rating === "opportunity") return "trackSector trackSectorOpportunity";
+    if (rating === "focus") return "trackSector trackSectorFocus";
+
+    return "trackSector";
+  }
+
   return (
     <div className="trackMapShell">
       <svg viewBox={map.viewBox} className="trackMapSvg" role="img">
         <title>Track sector map</title>
 
-        {map.sectors.map((sector) => {
-          const isBest = Boolean(bestSectors[sector.sector]);
-
-          return (
-            <path
-              key={sector.sector}
-              d={sector.path}
-              className={isBest ? "trackSector trackSectorBest" : "trackSector"}
-            />
-          );
-        })}
+        {map.sectors.map((sector) => (
+          <path
+            key={sector.sector}
+            d={sector.path}
+            className={getClass(sector.sector)}
+          />
+        ))}
 
         {map.sectors.map((sector, index) => (
           <text
@@ -41,8 +47,9 @@ export default function TrackMap({ trackSlug, bestSectors = {} }) {
       </svg>
 
       <div className="trackMapLegend">
-        <span><i className="legendBest" /> Best sector in uploaded data</span>
-        <span><i className="legendBase" /> Sector route</span>
+        <span><i className="legendExcellent" /> Excellent</span>
+        <span><i className="legendOpportunity" /> Opportunity</span>
+        <span><i className="legendFocus" /> Focus area</span>
       </div>
     </div>
   );
