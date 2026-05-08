@@ -471,3 +471,9 @@ h3 {
 .legendFocus {
   background: #f04438;
 }
+
+.trackCornerLabel {
+  fill: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
