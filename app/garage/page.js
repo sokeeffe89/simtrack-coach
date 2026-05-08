@@ -4,6 +4,16 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { tracks } from "../../lib/tracks";
 
+function formatMs(ms) {
+  if (!ms && ms !== 0) return "—";
+
+  const totalSeconds = ms / 1000;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = (totalSeconds % 60).toFixed(3).padStart(6, "0");
+
+  return `${minutes}:${seconds}`;
+}
+
 export default function GaragePage() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -16,6 +26,7 @@ export default function GaragePage() {
   const [cars, setCars] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [selectedTrack, setSelectedTrack] = useState("spa");
+  const [telemetrySessions, setTelemetrySessions] = useState([]);
 
   const [message, setMessage] = useState("");
 
@@ -46,6 +57,7 @@ export default function GaragePage() {
 
       await loadCars(profileData.id);
       await loadFavourites(profileData.id);
+      await loadTelemetrySessions(profileData.id);
 
       setLoading(false);
     }
@@ -60,9 +72,7 @@ export default function GaragePage() {
       .eq("profile_id", profileId)
       .order("created_at", { ascending: false });
 
-    if (data) {
-      setCars(data);
-    }
+    if (data) setCars(data);
   }
 
   async function loadFavourites(profileId) {
@@ -72,9 +82,69 @@ export default function GaragePage() {
       .eq("profile_id", profileId)
       .order("created_at", { ascending: false });
 
-    if (data) {
-      setFavourites(data);
+    if (data) setFavourites(data);
+  }
+
+  async function loadTelemetrySessions(profileId) {
+    const { data: sessions, error } = await supabase
+      .from("telemetry_sessions")
+      .select("*")
+      .eq("profile_id", profileId)
+      .order("created_at", { ascending: false });
+
+    if (error || !sessions) {
+      setTelemetrySessions([]);
+      return;
     }
+
+    const enriched = [];
+
+    for (const session of sessions) {
+      const { data: laps } = await supabase
+        .from("telemetry_laps")
+        .select("*, telemetry_sectors(*)")
+        .eq("session_id", session.id)
+        .order("lap_number", { ascending: true });
+
+      const validLaps = laps || [];
+      const bestLap = validLaps.reduce((best, lap) => {
+        if (!best || lap.lap_time_ms < best.lap_time_ms) return lap;
+        return best;
+      }, null);
+
+      const bestSectors = {};
+
+      validLaps.forEach((lap) => {
+        (lap.telemetry_sectors || []).forEach((sector) => {
+          const sectorNumber = sector.sector_number;
+
+          if (
+            !bestSectors[sectorNumber] ||
+            sector.sector_time_ms < bestSectors[sectorNumber]
+          ) {
+            bestSectors[sectorNumber] = sector.sector_time_ms;
+          }
+        });
+      });
+
+      const idealLapMs = Object.values(bestSectors).reduce(
+        (sum, value) => sum + value,
+        0
+      );
+
+      const potentialGainMs =
+        bestLap && idealLapMs ? bestLap.lap_time_ms - idealLapMs : null;
+
+      enriched.push({
+        ...session,
+        laps: validLaps,
+        bestLap,
+        idealLapMs: idealLapMs || null,
+        potentialGainMs
+      });
+    }
+
+    setTelemetrySessions(enriched);
   }
 
   async function saveCar(e) {
@@ -82,16 +152,14 @@ export default function GaragePage() {
 
     if (!profile) return;
 
-    const { error } = await supabase
-      .from("garage_cars")
-      .insert([
-        {
-          profile_id: profile.id,
-          car_name: carName,
-          class_name: carClass,
-          sim_name: sim
-        }
-      ]);
+    const { error } = await supabase.from("garage_cars").insert([
+      {
+        profile_id: profile.id,
+        car_name: carName,
+        class_name: carClass,
+        sim_name: sim
+      }
+    ]);
 
     if (error) {
       setMessage(error.message);
@@ -105,25 +173,19 @@ export default function GaragePage() {
   }
 
   async function deleteCar(id) {
-    await supabase
-      .from("garage_cars")
-      .delete()
-      .eq("id", id);
-
+    await supabase.from("garage_cars").delete().eq("id", id);
     await loadCars(profile.id);
   }
 
   async function addFavouriteTrack() {
     if (!profile) return;
 
-    const { error } = await supabase
-      .from("favourite_tracks")
-      .insert([
-        {
-          profile_id: profile.id,
-          track_slug: selectedTrack
-        }
-      ]);
+    const { error } = await supabase.from("favourite_tracks").insert([
+      {
+        profile_id: profile.id,
+        track_slug: selectedTrack
+      }
+    ]);
 
     if (error) {
       setMessage(error.message);
@@ -131,16 +193,11 @@ export default function GaragePage() {
     }
 
     setMessage("Favourite track added.");
-
     await loadFavourites(profile.id);
   }
 
   async function removeFavourite(id) {
-    await supabase
-      .from("favourite_tracks")
-      .delete()
-      .eq("id", id);
-
+    await supabase.from("favourite_tracks").delete().eq("id", id);
     await loadFavourites(profile.id);
   }
 
@@ -172,6 +229,7 @@ export default function GaragePage() {
 
         <div>
           <a href="/tracks">Tracks</a>
+          <a href="/upload">Upload</a>
           <button onClick={logout} className="navButton">Log out</button>
         </div>
       </nav>
@@ -290,6 +348,62 @@ export default function GaragePage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      <section className="section roadmap">
+        <div className="rowHeader">
+          <div>
+            <p className="eyebrow">Telemetry dashboard</p>
+            <h2>Your uploaded sessions</h2>
+          </div>
+
+          <a href="/upload" className="button secondary">
+            Upload telemetry
+          </a>
+        </div>
+
+        {telemetrySessions.length === 0 && (
+          <p className="heroText">No telemetry sessions uploaded yet.</p>
+        )}
+
+        <div className="trackGrid">
+          {telemetrySessions.map((session) => {
+            const track = tracks.find((t) => t.slug === session.track_slug);
+
+            return (
+              <article className="trackCard" key={session.id}>
+                <div className="trackTop">
+                  <h3>{session.session_name || "Telemetry session"}</h3>
+                  <span>{session.sim_name}</span>
+                </div>
+
+                <p className="focus">
+                  {track?.name || session.track_slug} · {session.car_name}
+                </p>
+
+                <div className="chips">
+                  <span>{session.laps.length} laps</span>
+                  <span>Best {formatMs(session.bestLap?.lap_time_ms)}</span>
+                </div>
+
+                <div className="chips mutedChips">
+                  <span>Ideal {formatMs(session.idealLapMs)}</span>
+                  <span>
+                    Gain{" "}
+                    {session.potentialGainMs !== null
+                      ? `${(session.potentialGainMs / 1000).toFixed(3)}s`
+                      : "—"}
+                  </span>
+                </div>
+
+                <p className="tip">
+                  Best actual lap compared against the theoretical ideal lap
+                  built from your best uploaded sector times.
+                </p>
+              </article>
+            );
+          })}
         </div>
       </section>
     </main>
