@@ -1,8 +1,8 @@
 function getSectorColour(rating) {
-  if (rating === "excellent") return "trackSectorExcellent";
-  if (rating === "opportunity") return "trackSectorOpportunity";
-  if (rating === "focus") return "trackSectorFocus";
-  return "";
+  if (rating === "excellent") return "#32d583";
+  if (rating === "opportunity") return "#f5a524";
+  if (rating === "focus") return "#f04438";
+  return "#93a7b7";
 }
 
 export default function TrackMap({ trackSlug, sectorRatings = {} }) {
@@ -18,29 +18,41 @@ export default function TrackMap({ trackSlug, sectorRatings = {} }) {
     <div className="trackMapShell">
       <div className="realTrackMap">
         <svg
-          viewBox="0 0 800 500"
+          viewBox="0 0 1000 700"
           className="realTrackMapImage"
           role="img"
           aria-label="Spa-Francorchamps sector map"
         >
           <path
-            d="M145 370 C95 350 85 305 125 275 C165 245 210 270 245 230 C285 185 335 135 395 85"
-            className={`trackSectorInline ${getSectorColour(sectorRatings[1])}`}
+            d="M175 540 C120 515 108 465 150 430 C198 390 255 425 300 370 C360 295 430 225 515 150"
+            fill="none"
+            stroke={getSectorColour(sectorRatings[1])}
+            strokeWidth="30"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
 
           <path
-            d="M395 85 C430 55 485 65 520 100 C555 135 525 170 560 205 C595 240 680 215 705 270"
-            className={`trackSectorInline ${getSectorColour(sectorRatings[2])}`}
+            d="M515 150 C565 110 645 120 690 165 C735 210 695 255 740 300 C790 350 900 315 935 390"
+            fill="none"
+            stroke={getSectorColour(sectorRatings[2])}
+            strokeWidth="30"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
 
           <path
-            d="M705 270 C735 335 665 385 575 405 C455 430 285 420 145 370"
-            className={`trackSectorInline ${getSectorColour(sectorRatings[3])}`}
+            d="M935 390 C975 485 880 555 760 585 C590 625 355 610 175 540"
+            fill="none"
+            stroke={getSectorColour(sectorRatings[3])}
+            strokeWidth="30"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
 
-          <text x="120" y="385" className="trackMapLabel">S1</text>
-          <text x="540" y="115" className="trackMapLabel">S2</text>
-          <text x="555" y="420" className="trackMapLabel">S3</text>
+          <text x="255" y="430" className="trackMapLabel">S1</text>
+          <text x="760" y="250" className="trackMapLabel">S2</text>
+          <text x="680" y="620" className="trackMapLabel">S3</text>
         </svg>
       </div>
 
