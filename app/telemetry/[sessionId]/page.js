@@ -165,14 +165,6 @@ export default function TelemetrySessionPage({ params }) {
           <h2>Track Map</h2>
           <TrackMap trackSlug={session.track_slug} bestSectors={bestSectors} />
         </div>
-          <p className="cornerTitle">
-            Best actual vs theoretical ideal lap
-          </p>
-          <p>
-            Your ideal lap is built from your best sector time across all uploaded laps.
-            The potential gain shows how much time is available if those best sectors are combined.
-          </p>
-        </div>
       </section>
 
       <section className="section detailGrid">
