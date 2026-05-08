@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 import { tracks } from "../../../lib/tracks";
+import TrackMap from "../../../components/TrackMap";
 
 function formatMs(ms) {
   if (!ms && ms !== 0) return "—";
@@ -161,7 +162,9 @@ export default function TelemetrySessionPage({ params }) {
         </div>
 
         <div className="heroPanel">
-          <h2>Analysis Summary</h2>
+          <h2>Track Map</h2>
+          <TrackMap trackSlug={session.track_slug} bestSectors={bestSectors} />
+        </div>
           <p className="cornerTitle">
             Best actual vs theoretical ideal lap
           </p>
