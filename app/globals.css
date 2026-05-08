@@ -523,3 +523,11 @@ h3 {
   right: 18%;
   bottom: 18%;
 }
+
+.trackSectorInline {
+  fill: none;
+  stroke: rgba(147, 167, 183, 0.45);
+  stroke-width: 26;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
