@@ -17,11 +17,15 @@ function timeToMs(value) {
   }
 
   const seconds = Number(clean);
-  if (!Number.isNaN(seconds)) {
-    return Math.round(seconds * 1000);
-  }
+  if (!Number.isNaN(seconds)) return Math.round(seconds * 1000);
 
   return null;
+}
+
+function numberOrNull(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
 }
 
 export default function UploadPage() {
@@ -84,11 +88,9 @@ export default function UploadPage() {
     const rows = lines.slice(1).map((line) => {
       const values = line.split(",");
       const row = {};
-
       headers.forEach((header, index) => {
         row[header] = values[index]?.trim();
       });
-
       return row;
     });
 
@@ -101,26 +103,48 @@ export default function UploadPage() {
     const sector2Header = headers.find((h) => h.includes("sector") && h.includes("2"));
     const sector3Header = headers.find((h) => h.includes("sector") && h.includes("3"));
 
-    const laps = rows
-      .map((row, index) => ({
-        lap_number: Number(row.lap || row.lap_number || index + 1),
-        lap_time_ms: timeToMs(row[lapTimeHeader]),
-        sectors: [
-          timeToMs(row[sector1Header]),
-          timeToMs(row[sector2Header]),
-          timeToMs(row[sector3Header])
-        ].filter(Boolean)
-      }))
-      .filter((lap) => lap.lap_time_ms);
+    const grouped = {};
+
+    rows.forEach((row, index) => {
+      const lapNumber = Number(row.lap || row.lap_number || 1);
+
+      if (!grouped[lapNumber]) {
+        grouped[lapNumber] = {
+          lap_number: lapNumber,
+          lap_time_ms: timeToMs(row[lapTimeHeader]),
+          sectors: [
+            timeToMs(row[sector1Header]),
+            timeToMs(row[sector2Header]),
+            timeToMs(row[sector3Header])
+          ].filter(Boolean),
+          points: []
+        };
+      }
+
+      grouped[lapNumber].points.push({
+        sample_index: index,
+        lap_percent: numberOrNull(row.lap_percent || row.lap_pct || row.lappercentage),
+        distance_m: numberOrNull(row.distance_m || row.distance || row.distancem),
+        speed_kph: numberOrNull(row.speed_kph || row.speed || row.velocity),
+        throttle: numberOrNull(row.throttle),
+        brake: numberOrNull(row.brake),
+        steering: numberOrNull(row.steering || row.steer),
+        gear: numberOrNull(row.gear),
+        rpm: numberOrNull(row.rpm)
+      });
+    });
+
+    const laps = Object.values(grouped).filter((lap) => lap.lap_time_ms);
 
     setPreview({
       fileName: file.name,
       totalRows: rows.length,
       detectedLaps: laps.length,
+      totalPoints: laps.reduce((sum, lap) => sum + lap.points.length, 0),
       laps
     });
 
-    setMessage(`Detected ${laps.length} lap(s).`);
+    setMessage(`Detected ${laps.length} lap(s) and ${rows.length} telemetry point(s).`);
   }
 
   async function saveSession() {
@@ -196,9 +220,25 @@ export default function UploadPage() {
           return;
         }
       }
+
+      if (lap.points.length > 0) {
+        const pointRows = lap.points.map((point) => ({
+          lap_id: savedLap.id,
+          ...point
+        }));
+
+        const { error: pointsError } = await supabase
+          .from("telemetry_points")
+          .insert(pointRows);
+
+        if (pointsError) {
+          setMessage(pointsError.message);
+          return;
+        }
+      }
     }
 
-    setMessage("Telemetry session saved.");
+    setMessage("Telemetry session saved with trace points.");
   }
 
   if (loading) {
@@ -239,7 +279,7 @@ export default function UploadPage() {
         <p className="eyebrow">Telemetry upload</p>
         <h1>Upload a lap session.</h1>
         <p className="heroText">
-          Start with a simple CSV containing lap time and optional sector columns.
+          Upload CSV telemetry containing lap times, sector times, and optional trace points.
         </p>
       </section>
 
@@ -282,11 +322,7 @@ export default function UploadPage() {
         <div className="roadmap">
           <h2>Detected data</h2>
 
-          {!preview && (
-            <p className="heroText">
-              No CSV uploaded yet.
-            </p>
-          )}
+          {!preview && <p className="heroText">No CSV uploaded yet.</p>}
 
           {preview && (
             <>
@@ -294,6 +330,7 @@ export default function UploadPage() {
                 <strong>{preview.fileName}</strong>
                 <p>Rows: {preview.totalRows}</p>
                 <p>Laps detected: {preview.detectedLaps}</p>
+                <p>Trace points: {preview.totalPoints}</p>
               </div>
 
               <div className="cornerList">
@@ -302,6 +339,7 @@ export default function UploadPage() {
                     <h3>Lap {lap.lap_number}</h3>
                     <p><strong>Lap time:</strong> {(lap.lap_time_ms / 1000).toFixed(3)}s</p>
                     <p><strong>Sectors:</strong> {lap.sectors.length || "None detected"}</p>
+                    <p><strong>Trace points:</strong> {lap.points.length}</p>
                   </div>
                 ))}
               </div>
