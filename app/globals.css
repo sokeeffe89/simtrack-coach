@@ -531,3 +531,18 @@ h3 {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.trackSectorInline.trackSectorExcellent {
+  stroke: #32d583;
+  filter: drop-shadow(0 0 12px rgba(50, 213, 131, 0.55));
+}
+
+.trackSectorInline.trackSectorOpportunity {
+  stroke: #f5a524;
+  filter: drop-shadow(0 0 12px rgba(245, 165, 36, 0.55));
+}
+
+.trackSectorInline.trackSectorFocus {
+  stroke: #f04438;
+  filter: drop-shadow(0 0 12px rgba(240, 68, 56, 0.55));
+}
