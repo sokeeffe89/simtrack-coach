@@ -444,3 +444,30 @@ h3 {
 .legendBase {
   background: rgba(147, 167, 183, 0.45);
 }
+
+.trackSectorExcellent {
+  stroke: #32d583;
+  filter: drop-shadow(0 0 12px rgba(50, 213, 131, 0.5));
+}
+
+.trackSectorOpportunity {
+  stroke: #f5a524;
+  filter: drop-shadow(0 0 12px rgba(245, 165, 36, 0.5));
+}
+
+.trackSectorFocus {
+  stroke: #f04438;
+  filter: drop-shadow(0 0 12px rgba(240, 68, 56, 0.5));
+}
+
+.legendExcellent {
+  background: #32d583;
+}
+
+.legendOpportunity {
+  background: #f5a524;
+}
+
+.legendFocus {
+  background: #f04438;
+}
