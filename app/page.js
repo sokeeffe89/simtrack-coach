@@ -10,7 +10,8 @@ export default function Home() {
         <div>
           <a href="/tracks">Tracks</a>
           <a href="/garage">Garage</a>
-         <a href="/login">Login</a>
+          <a href="/upload">Upload</a>
+          <a href="/login">Login</a>
         </div>
       </nav>
 
