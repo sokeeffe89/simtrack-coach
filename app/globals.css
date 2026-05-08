@@ -387,3 +387,60 @@ h3 {
     grid-template-columns: 1fr;
   }
 }
+
+.trackMapShell {
+  margin-top: 18px;
+}
+
+.trackMapSvg {
+  width: 100%;
+  min-height: 220px;
+  overflow: visible;
+}
+
+.trackSector {
+  fill: none;
+  stroke: rgba(147, 167, 183, 0.45);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trackSectorBest {
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 12px rgba(67, 215, 198, 0.55));
+}
+
+.trackMapLabel {
+  fill: var(--text);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.trackMapLegend {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.trackMapLegend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trackMapLegend i {
+  display: inline-block;
+  width: 22px;
+  height: 8px;
+  border-radius: 99px;
+}
+
+.legendBest {
+  background: var(--accent);
+}
+
+.legendBase {
+  background: rgba(147, 167, 183, 0.45);
+}
