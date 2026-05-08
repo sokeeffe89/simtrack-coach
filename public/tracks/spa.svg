@@ -1,17 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
   <rect width="800" height="500" fill="none"/>
+
   <path
-    d="M145 370
-       C95 350 85 305 125 275
-       C165 245 210 270 245 230
-       C285 185 335 135 395 85
-       C430 55 485 65 520 100
-       C555 135 525 170 560 205
-       C595 240 680 215 705 270
-       C735 335 665 385 575 405
-       C455 430 285 420 145 370"
+    id="sector-1"
+    d="M145 370 C95 350 85 305 125 275 C165 245 210 270 245 230 C285 185 335 135 395 85"
     fill="none"
-    stroke="#eaf2f8"
+    stroke="currentColor"
+    stroke-width="26"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    id="sector-2"
+    d="M395 85 C430 55 485 65 520 100 C555 135 525 170 560 205 C595 240 680 215 705 270"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="26"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    id="sector-3"
+    d="M705 270 C735 335 665 385 575 405 C455 430 285 420 145 370"
+    fill="none"
+    stroke="currentColor"
     stroke-width="26"
     stroke-linecap="round"
     stroke-linejoin="round"
