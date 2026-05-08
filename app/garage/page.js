@@ -372,7 +372,7 @@ export default function GaragePage() {
             const track = tracks.find((t) => t.slug === session.track_slug);
 
             return (
-              <article className="trackCard" key={session.id}>
+              <a className="trackCard" key={session.id} href={`/telemetry/${session.id}`}>
                 <div className="trackTop">
                   <h3>{session.session_name || "Telemetry session"}</h3>
                   <span>{session.sim_name}</span>
@@ -401,7 +401,7 @@ export default function GaragePage() {
                   Best actual lap compared against the theoretical ideal lap
                   built from your best uploaded sector times.
                 </p>
-              </article>
+              </a>
             );
           })}
         </div>
