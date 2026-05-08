@@ -477,3 +477,49 @@ h3 {
   font-size: 13px;
   font-weight: 700;
 }
+
+.realTrackMap {
+  position: relative;
+  width: 100%;
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  padding: 18px;
+}
+
+.realTrackMapImage {
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(67, 215, 198, 0.25));
+}
+
+.sectorOverlay {
+  position: absolute;
+  border: 1px solid var(--line);
+  background: rgba(7, 16, 24, 0.82);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sectorOne {
+  left: 10%;
+  bottom: 16%;
+}
+
+.sectorTwo {
+  right: 12%;
+  top: 18%;
+}
+
+.sectorThree {
+  right: 18%;
+  bottom: 18%;
+}
