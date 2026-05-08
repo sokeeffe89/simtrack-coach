@@ -34,16 +34,16 @@ export default function TrackMap({ trackSlug, sectorRatings = {} }) {
           />
         ))}
 
-        {map.sectors.map((sector, index) => (
+        {(map.labels || []).map((label) => (
           <text
-            key={sector.label}
-            x={index === 0 ? 120 : index === 1 ? 310 : 300}
-            y={index === 0 ? 210 : index === 1 ? 95 : 255}
-            className="trackMapLabel"
+            key={label.text}
+            x={label.x}
+            y={label.y}
+         className="trackMapLabel"
           >
-            S{sector.sector}
-          </text>
-        ))}
+        {label.text}
+        </text>
+       ))}
       </svg>
 
       <div className="trackMapLegend">
