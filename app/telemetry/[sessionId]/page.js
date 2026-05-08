@@ -113,6 +113,35 @@ export default function TelemetrySessionPage({ params }) {
     });
   });
 
+ const sectorStats = {};
+
+laps.forEach((lap) => {
+  (lap.telemetry_sectors || []).forEach((sector) => {
+    const sectorNumber = sector.sector_number;
+
+    if (!sectorStats[sectorNumber]) {
+      sectorStats[sectorNumber] = [];
+    }
+
+    sectorStats[sectorNumber].push(sector.sector_time_ms);
+  });
+});
+
+const sectorRatings = {};
+
+Object.entries(sectorStats).forEach(([sectorNumber, values]) => {
+  const best = Math.min(...values);
+  const worst = Math.max(...values);
+  const spread = worst - best;
+
+  if (spread < 300) {
+    sectorRatings[sectorNumber] = "excellent";
+  } else if (spread < 900) {
+    sectorRatings[sectorNumber] = "opportunity";
+  } else {
+    sectorRatings[sectorNumber] = "focus";
+  }
+}); 
   const idealLapMs = Object.values(bestSectors).reduce(
     (sum, value) => sum + value,
     0
@@ -163,7 +192,10 @@ export default function TelemetrySessionPage({ params }) {
 
         <div className="heroPanel">
           <h2>Track Map</h2>
-          <TrackMap trackSlug={session.track_slug} bestSectors={bestSectors} />
+          <TrackMap
+              trackSlug={session.track_slug}
+              sectorRatings={sectorRatings}
+            />
         </div>
       </section>
 
