@@ -6,6 +6,7 @@ import { tracks } from "../../../lib/tracks";
 import TrackMap from "../../../components/TrackMap";
 import TelemetryTraceChart from "../../../components/TelemetryTraceChart";
 import LapComparisonChart from "../../../components/LapComparisonChart";
+import CoachingInsights from "../../../components/CoachingInsights";
 
 function formatMs(ms) {
   if (!ms && ms !== 0) return "—";
@@ -235,7 +236,22 @@ const comparisonLapPoints = comparisonLap?.telemetry_points
     bestLapPoints={bestLapPoints}
     comparisonLapPoints={comparisonLapPoints}
   />
-</section>              
+</section>  
+
+<section className="section roadmap">
+  <div className="rowHeader">
+    <div>
+      <p className="eyebrow">Coaching insights</p>
+      <h2>Where to focus next</h2>
+    </div>
+  </div>
+
+  <CoachingInsights
+    bestLapPoints={bestLapPoints}
+    comparisonLapPoints={comparisonLapPoints}
+  />
+</section>
+      
 </section>  
                 
       <section className="section detailGrid">
