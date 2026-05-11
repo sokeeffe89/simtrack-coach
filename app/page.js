@@ -8,10 +8,11 @@ export default function Home() {
       <nav className="nav">
         <a href="/" className="logo">SimTrack Coach</a>
         <div>
-          <a href="/tracks">Tracks</a>
-          <a href="/garage">Garage</a>
-          <a href="/upload">Upload</a>
           <a href="/login">Login</a>
+          <a href="/garage">Garage</a>
+          <a href="/tracks">Tracks</a>
+          <a href="/sessions">Sessions</a>
+          <a href="/upload">Upload</a>
         </div>
       </nav>
 
