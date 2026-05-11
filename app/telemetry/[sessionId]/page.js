@@ -5,6 +5,7 @@ import { supabase } from "../../../lib/supabase";
 import { tracks } from "../../../lib/tracks";
 import TrackMap from "../../../components/TrackMap";
 import TelemetryTraceChart from "../../../components/TelemetryTraceChart";
+import LapComparisonChart from "../../../components/LapComparisonChart";
 
 function formatMs(ms) {
   if (!ms && ms !== 0) return "—";
@@ -155,6 +156,14 @@ Object.entries(sectorStats).forEach(([sectorNumber, values]) => {
   ? [...bestLap.telemetry_points].sort((a, b) => a.sample_index - b.sample_index)
   : [];
 
+  const comparisonLap = laps
+  .filter((lap) => lap.id !== bestLap?.id)
+  .sort((a, b) => a.lap_time_ms - b.lap_time_ms)[0];
+
+const comparisonLapPoints = comparisonLap?.telemetry_points
+  ? [...comparisonLap.telemetry_points].sort((a, b) => a.sample_index - b.sample_index)
+  : [];
+
   return (
     <main className="page">
       <nav className="nav">
@@ -213,6 +222,20 @@ Object.entries(sectorStats).forEach(([sectorNumber, values]) => {
       </div>
 
   <TelemetryTraceChart points={bestLapPoints} />
+    
+  <section className="section roadmap">
+    <div className="rowHeader">
+      <div>
+        <p className="eyebrow">Lap comparison</p>
+        <h2>Best lap vs next best lap</h2>
+      </div>
+    </div>
+
+  <LapComparisonChart
+    bestLapPoints={bestLapPoints}
+    comparisonLapPoints={comparisonLapPoints}
+  />
+</section>              
 </section>  
                 
       <section className="section detailGrid">
