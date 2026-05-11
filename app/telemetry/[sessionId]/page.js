@@ -249,6 +249,7 @@ const comparisonLapPoints = comparisonLap?.telemetry_points
   <CoachingInsights
     bestLapPoints={bestLapPoints}
     comparisonLapPoints={comparisonLapPoints}
+    trackSlug={session.track_slug}
   />
 </section>
       
