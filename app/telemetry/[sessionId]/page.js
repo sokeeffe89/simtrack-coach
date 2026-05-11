@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 import { tracks } from "../../../lib/tracks";
 import TrackMap from "../../../components/TrackMap";
+import TelemetryTraceChart from "../../../components/TelemetryTraceChart";
 
 function formatMs(ms) {
   if (!ms && ms !== 0) return "—";
@@ -45,7 +46,7 @@ export default function TelemetrySessionPage({ params }) {
 
       const { data: lapData, error: lapError } = await supabase
         .from("telemetry_laps")
-        .select("*, telemetry_sectors(*)")
+        .select("*, telemetry_sectors(*), telemetry_points(*)")
         .eq("session_id", params.sessionId)
         .order("lap_number", { ascending: true });
 
@@ -150,6 +151,10 @@ Object.entries(sectorStats).forEach(([sectorNumber, values]) => {
   const potentialGainMs =
     bestLap && idealLapMs ? bestLap.lap_time_ms - idealLapMs : null;
 
+  const bestLapPoints = bestLap?.telemetry_points
+  ? [...bestLap.telemetry_points].sort((a, b) => a.sample_index - b.sample_index)
+  : [];
+
   return (
     <main className="page">
       <nav className="nav">
@@ -199,6 +204,17 @@ Object.entries(sectorStats).forEach(([sectorNumber, values]) => {
         </div>
       </section>
 
+      <section className="section roadmap">
+        <div className="rowHeader">
+        <div>
+          <p className="eyebrow">Telemetry traces</p>
+          <h2>Best lap speed, throttle and brake</h2>
+        </div>
+      </div>
+
+  <TelemetryTraceChart points={bestLapPoints} />
+</section>  
+                
       <section className="section detailGrid">
         <div className="roadmap">
           <p className="eyebrow">Lap table</p>
