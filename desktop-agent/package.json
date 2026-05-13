@@ -1,0 +1,11 @@
+{
+  "name": "simtrack-coach-desktop-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/agent.js",
+    "sample": "node src/agent.js"
+  },
+  "dependencies": {}
+}
