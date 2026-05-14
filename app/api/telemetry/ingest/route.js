@@ -52,17 +52,52 @@ function validatePayload(body) {
     return `Too many laps in one request. Maximum is ${MAX_LAPS_PER_REQUEST}.`;
   }
 
-  for (const lap of body.laps) {
-    if (!lap.lap_number || !lap.lap_time_ms) {
-      return "Each lap must include lap_number and lap_time_ms.";
-    }
+  return null;
+}
 
-    if (lap.points?.length > MAX_POINTS_PER_LAP) {
-      return `Too many telemetry points for lap ${lap.lap_number}. Maximum is ${MAX_POINTS_PER_LAP}.`;
+async function getOrCreateSession({ profile_id, sim_name, track_slug, car_name, session_name, uploaded_file, external_session_id }) {
+  if (external_session_id) {
+    const { data: existing } = await supabase
+      .from("telemetry_sessions")
+      .select("id")
+      .eq("profile_id", profile_id)
+      .eq("source_type", "desktop-agent")
+      .eq("external_session_id", external_session_id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("telemetry_sessions")
+        .update({ last_ingested_at: new Date().toISOString() })
+        .eq("id", existing.id);
+
+      return existing;
     }
   }
 
-  return null;
+  const { data: created, error } = await supabase
+    .from("telemetry_sessions")
+    .insert([
+      {
+        profile_id,
+        sim_name,
+        track_slug,
+        car_name,
+        session_name: session_name || "iRacing sync session",
+        uploaded_file: uploaded_file || "desktop-agent",
+        source_type: "desktop-agent",
+        external_session_id: external_session_id || null,
+        last_ingested_at: new Date().toISOString()
+      }
+    ])
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return created;
 }
 
 export async function POST(request) {
@@ -81,7 +116,7 @@ export async function POST(request) {
 
   try {
     body = await request.json();
-  } catch (error) {
+  } catch {
     return jsonError("Invalid JSON body.", 400);
   }
 
@@ -97,49 +132,61 @@ export async function POST(request) {
     car_name,
     session_name,
     uploaded_file,
+    external_session_id,
     laps
   } = body;
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("id")
     .eq("id", profile_id)
     .single();
 
-  if (profileError || !profile) {
+  if (!profile) {
     return jsonError("Profile not found for telemetry ingest.", 404);
   }
 
-  const { data: session, error: sessionError } = await supabase
-    .from("telemetry_sessions")
-    .insert([
-      {
-        profile_id,
-        sim_name,
-        track_slug,
-        car_name,
-        session_name: session_name || "iRacing sync session",
-        uploaded_file: uploaded_file || "desktop-agent",
-        source_type: "desktop-agent"
-      }
-    ])
-    .select()
-    .single();
+  let session;
 
-  if (sessionError) {
-    return jsonError("Failed to create telemetry session.", 500, sessionError.message);
+  try {
+    session = await getOrCreateSession({
+      profile_id,
+      sim_name,
+      track_slug,
+      car_name,
+      session_name,
+      uploaded_file,
+      external_session_id
+    });
+  } catch (error) {
+    return jsonError("Failed to create telemetry session.", 500, error.message);
   }
 
   let savedLapCount = 0;
   let savedPointCount = 0;
+  let skippedDuplicateLaps = 0;
 
   for (const lap of laps) {
+    const lapNumber = toIntegerOrNull(lap.lap_number);
+
+    const { data: existingLap } = await supabase
+      .from("telemetry_laps")
+      .select("id")
+      .eq("session_id", session.id)
+      .eq("lap_number", lapNumber)
+      .maybeSingle();
+
+    if (existingLap) {
+      skippedDuplicateLaps += 1;
+      continue;
+    }
+
     const { data: savedLap, error: lapError } = await supabase
       .from("telemetry_laps")
       .insert([
         {
           session_id: session.id,
-          lap_number: toIntegerOrNull(lap.lap_number),
+          lap_number: lapNumber,
           lap_time_ms: toIntegerOrNull(lap.lap_time_ms),
           is_valid: lap.is_valid ?? true
         }
@@ -163,13 +210,7 @@ export async function POST(request) {
         }));
 
       if (sectorRows.length) {
-        const { error: sectorError } = await supabase
-          .from("telemetry_sectors")
-          .insert(sectorRows);
-
-        if (sectorError) {
-          return jsonError("Failed to create telemetry sectors.", 500, sectorError.message);
-        }
+        await supabase.from("telemetry_sectors").insert(sectorRows);
       }
     }
 
@@ -188,13 +229,7 @@ export async function POST(request) {
       }));
 
       for (const pointChunk of chunkRows(pointRows, POINT_INSERT_BATCH_SIZE)) {
-        const { error: pointError } = await supabase
-          .from("telemetry_points")
-          .insert(pointChunk);
-
-        if (pointError) {
-          return jsonError("Failed to create telemetry points.", 500, pointError.message);
-        }
+        await supabase.from("telemetry_points").insert(pointChunk);
       }
 
       savedPointCount += pointRows.length;
@@ -205,6 +240,7 @@ export async function POST(request) {
     success: true,
     session_id: session.id,
     saved_laps: savedLapCount,
-    saved_points: savedPointCount
+    saved_points: savedPointCount,
+    skipped_duplicate_laps: skippedDuplicateLaps
   });
 }
