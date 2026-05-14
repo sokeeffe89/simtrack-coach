@@ -1,3 +1,5 @@
 SIMTRACK_API_URL=https://your-app.vercel.app
 SIMTRACK_INGEST_TOKEN=replace-me
 SIMTRACK_PROFILE_ID=replace-me
+SIMTRACK_TRACK_SLUG=spa
+SIMTRACK_CAR_NAME=Ferrari 296 GT3
